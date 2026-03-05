@@ -11,7 +11,7 @@ next_id = 3
 
 @app.route('/produse', methods=['GET']) 
 def get_produse():
-    return jsonify({"date": produse, "frate": produse})
+    return jsonify({"date": produse})
 
 @app.route('/produs/<int:produs_id>', methods=['GET'])
 def get_produs(produs_id):
@@ -31,14 +31,15 @@ def delete_produs(produs_id):
 @app.route('/add_produs/', methods=['POST'])
 def add_produs():
     global next_id
-
+    if(any(p['nume'].lower() == request.json['nume'].lower() for p in produse)):
+        return jsonify({"eroare": "Acest produs exista deja in lista"}), 409
     nou_produs = {
-        "id": next_id,
+        "id": len(produse),
         "nume": request.json['nume'],
         "pret": request.json['pret']
     }
+
     produse.append(nou_produs)
-    next_id += 1
     return jsonify(nou_produs), 201
 
 
