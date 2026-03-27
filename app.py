@@ -1,17 +1,18 @@
 from flask import Flask, jsonify, request, Response
-from service import get_knowledge, add_knowledge
+from service import get_knowledge,get_allknowledge, add_knowledge
+from exeptions import DuplicateExeptions
 
 app = Flask(__name__, template_folder="templates")
 
 
-produse = [
-    {"id": 1, "nume": "Laptop", "pret": 3500},
-    {"id": 2, "nume": "Mouse", "pret": 150}
-]
-
 @app.route('/produse', methods=['GET']) 
 def get_produse():
-    return jsonify({"date": produse})
+    content = get_allknowledge() #Extragem continutul din baza de date
+    if not content :
+        return jsonify({"Eroare" : "Nu exista produse"})
+    return jsonify(content)
+    
+    
 
 @app.route('/produs/<int:produs_id>', methods=['GET'])
 def get_produs(produs_id):
@@ -23,13 +24,19 @@ def get_produs(produs_id):
 
 @app.route('/add_produs/', methods=['POST'])
 def add_produs():
-    name = request.json['name']
-    price = request.json['price']
-    code = add_knowledge(name, price)
-    if code['Status'] == 'Duplicate':
-        return jsonify({"eroare": "Produsul deja exista in lista"}), 409
-    return jsonify("Produsul a fost adaugat cu succes"), 201
-
+    data = request.get_json()
+    name = data.get('name')
+    price = data.get('price')
+    if not name or not price:
+        return jsonify({"eroare": "Lipsesc date (nume sau pret)"}), 400
+    try: #Exception handling, blocul de cod "asculta" exceptii(erori) si returneaza in functie de eroare
+        item = add_knowledge(name, price)
+        return jsonify({
+            "message": "Produsul a fost adăugat",
+            "data": item
+        }), 201
+    except DuplicateException as e: #Nu se mai returneaza obiectul, ci doar eroarea
+        return jsonify({"eroare": str(e)}), 409
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

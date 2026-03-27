@@ -1,4 +1,12 @@
 from database.db import get_connection
+from exeptions import DuplicateExeptions
+
+def get_allknowledge():
+    with get_connection() as con:#with deschide conexiunea catre database, si o inchide automat cand se iese din blocul indentat
+        cur = con.cursor()
+        #De asemenea executa operatii in baza de date
+        cur.execute("SELECT * FROM")
+
 
 def get_knowledge(id):
     con = get_connection()
