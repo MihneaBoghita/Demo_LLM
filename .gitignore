@@ -1,3 +1,22 @@
+# Virtual env
+.venv/
 venv/
-.postman
-postman/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env
+.env
+

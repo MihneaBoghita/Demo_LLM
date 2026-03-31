@@ -1,25 +1,42 @@
 from flask import Flask, jsonify, request, Response
 from service import get_knowledge,get_allknowledge, add_knowledge
-from exeptions import DuplicateExeptions
+from exceptions import DuplicateExeptions
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # vezi INFO, WARNING, ERROR
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 app = Flask(__name__, template_folder="templates")
 
 
 @app.route('/produse', methods=['GET']) 
 def get_produse():
-    content = get_allknowledge() #Extragem continutul din baza de date
-    if not content :
-        return jsonify({"Eroare" : "Nu exista produse"})
-    return jsonify(content)
+    try:
+        content = get_allknowledge()
+
+        if not content:
+            return jsonify({"Eroare": "Nu exista produse"}), 404
+        return jsonify(content), 200
+
+    except Exception:
+        logging.exception("Eroare")
+    return jsonify({"Status": "Error"}), 500
     
     
 
 @app.route('/produs/<int:produs_id>', methods=['GET'])
 def get_produs(produs_id):
-    content = get_knowledge(produs_id)
-    if not content:
-        return jsonify({"eroare": "Produsul nu a fost gasit"})
-    return jsonify(content)
+    try:
+        content = get_knowledge(produs_id)
+        if not content:
+            return jsonify({"eroare": "Produsul nu a fost gasit"}),404
+        return jsonify(content),200
+    except Exception as e:
+        # return jsonify({"Status": "Error", "Message": str(e)}), 500     ->   risc de securitate, str(e) arata direct eroarea 
+        logging.exception("Eroare la get_produs")
+    return jsonify({"Status": "Error", "Message": "Internal server error"}), 500
     
 
 @app.route('/add_produs/', methods=['POST'])
@@ -35,9 +52,9 @@ def add_produs():
             "message": "Produsul a fost adăugat",
             "data": item
         }), 201
-    except DuplicateException as e: #Nu se mai returneaza obiectul, ci doar eroarea
-        return jsonify({"eroare": str(e)}), 409
+    except DuplicateExeptions as e:
+        logging.warning("Produs duplicat incercat: %s", name)
+        return jsonify({"eroare": "Produsul exista deja"}), 409
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
-
