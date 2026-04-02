@@ -57,26 +57,7 @@ def add_knowledge(name, price):
         with get_connection() as con:
             cur = con.cursor()
 
-            cur.execute(
-                "SELECT 1 FROM products WHERE LOWER(name) = LOWER(?)",
-                (name,)
-            )
-
-            if cur.fetchone():
-                raise DuplicateExeptions()
-
-            cur.execute(
-                "INSERT INTO products (name, price) VALUES (?, ?)",
-                (name, price)
-            )
-
-            new_id = cur.lastrowid
-
-            cur.execute(
-                "SELECT * FROM products WHERE id = ?",
-                (new_id,)
-            )
-
+            cur.execute("INSERT INTO products (name, price) VALUES (?, ?) RETURNING id, name, price", (name, price))
             row = cur.fetchone()
 
             return {

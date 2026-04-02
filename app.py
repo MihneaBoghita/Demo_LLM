@@ -35,7 +35,7 @@ def get_produs(produs_id):
         return jsonify(content),200
     except Exception as e:
         # return jsonify({"Status": "Error", "Message": str(e)}), 500     ->   risc de securitate, str(e) arata direct eroarea 
-        logging.exception("Eroare la get_produs")
+        logging.exception(str(e))
     return jsonify({"Status": "Error", "Message": "Internal server error"}), 500
     
 
@@ -53,7 +53,7 @@ def add_produs():
             "data": item
         }), 201
     except DuplicateExeptions as e:
-        logging.warning("Produs duplicat incercat: %s", name)
+        logging.warning("Eroare la ...")
         return jsonify({"eroare": "Produsul exista deja"}), 409
 
 if __name__ == "__main__":
