@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% set pagina = 'acasa' %}
+
+{% block titlu %}Demo API — Acasa{% endblock %}
+
+{% block continut %}
+<h1>Demo API — Gestionare Produse</h1>
+
+<div class="card">
+    <p style="margin-bottom:1.2rem; color:#555; line-height:1.6;">
+        Acest proiect demonstreaza cum se definesc si se consuma endpoint-uri REST
+        folosind <strong>Flask</strong> si <strong>SQLite</strong>.
+        Foloseste meniul de navigare pentru a interactiona cu API-ul direct din browser.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Pagina</th>
+                <th>Metoda HTTP</th>
+                <th>Endpoint API</th>
+                <th>Descriere</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="/pagina/produse">Toate produsele</a></td>
+                <td><span class="badge badge-get">GET</span></td>
+                <td><code>/produse</code></td>
+                <td>Returneaza lista completa de produse</td>
+            </tr>
+            <tr>
+                <td><a href="/pagina/cauta">Cauta produs</a></td>
+                <td><span class="badge badge-get">GET</span></td>
+                <td><code>/produs/&lt;id&gt;</code></td>
+                <td>Returneaza un produs dupa ID</td>
+            </tr>
+            <tr>
+                <td><a href="/pagina/adauga">Adauga produs</a></td>
+                <td><span class="badge badge-post">POST</span></td>
+                <td><code>/add_produs</code></td>
+                <td>Adauga un produs nou in baza de date</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

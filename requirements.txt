@@ -1,1 +1,6 @@
 flask
+pytest
+sentence-transformers
+torch
+faker
+requests

@@ -22,3 +22,4 @@ def get_connection(auto_create = False):
     finally:
         if(con):
             con.close()
+

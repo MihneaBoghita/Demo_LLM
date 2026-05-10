@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% set pagina = 'cauta' %}
+
+{% block titlu %}Cauta produs dupa ID{% endblock %}
+
+{% block continut %}
+<h1>
+    <span class="badge badge-get">GET</span>
+    /produs/&lt;id&gt; — Cauta produs dupa ID
+</h1>
+
+<div class="card">
+    <p style="color:#555; margin-bottom:1.2rem;">
+        Introdu un ID numeric si apasa <strong>Cauta</strong> pentru a trimite
+        o cerere <strong>GET</strong> catre <code>/produs/&lt;id&gt;</code>.
+    </p>
+
+    <div class="form-grup" style="max-width:280px;">
+        <label for="campId">ID produs</label>
+        <input
+            type="number"
+            id="campId"
+            min="1"
+            placeholder="ex: 1"
+            onkeydown="if(event.key==='Enter') cautaProdus()"
+        >
+    </div>
+    <button class="btn-primar" onclick="cautaProdus()">Cauta</button>
+
+    <div id="mesaj" class="mesaj"></div>
+
+    <!-- Card rezultat, ascuns initial -->
+    <div id="rezultat" style="display:none; margin-top:1.2rem;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nume</th>
+                    <th>Pret (RON)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="rez-id"></td>
+                    <td id="rez-name"></td>
+                    <td id="rez-price"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div id="cat-section" style="margin-top: 1.2rem; padding: 0.8rem; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff;">
+            <strong>Categorii:</strong>
+            <div id="rez-categories" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function cautaProdus() {
+    const id       = document.getElementById('campId').value.trim();
+    const mesajEl  = document.getElementById('mesaj');
+    const rezultat = document.getElementById('rezultat');
+
+    // Resetam starea
+    mesajEl.style.display  = 'none';
+    mesajEl.className      = 'mesaj';
+    rezultat.style.display = 'none';
+
+    if (!id || parseInt(id) < 1) {
+        afiseazaMesaj('eroare', 'Te rugam sa introduci un ID valid (numar intreg pozitiv).');
+        return;
+    }
+
+    try {
+        // Cerere GET catre /produs/<id>
+        const raspuns = await fetch(`/produs/${parseInt(id)}`);
+        const date    = await raspuns.json();
+
+        if (raspuns.status === 404) {
+            afiseazaMesaj('eroare', `Nu exista niciun produs cu ID-ul ${id}.`);
+            return;
+        }
+
+        if (!raspuns.ok) {
+            afiseazaMesaj('eroare', date.eroare || 'Eroare necunoscuta de la server.');
+            return;
+        }
+
+        // Afisam datele produsului
+        document.getElementById('rez-id').textContent    = date.id;
+        document.getElementById('rez-name').textContent  = date.name;
+        document.getElementById('rez-price').textContent = date.price;
+
+        const catContainer = document.getElementById('rez-categories');
+        catContainer.innerHTML = '';
+        if (date.categories && date.categories.length > 0) {
+            date.categories.forEach(cat => {
+                const badge = document.createElement('div');
+                badge.textContent = cat;
+                badge.style.background = '#e9ecef';
+                badge.style.padding = '4px 8px';
+                badge.style.borderRadius = '4px';
+                badge.style.fontSize = '0.9rem';
+                catContainer.appendChild(badge);
+            });
+        } else {
+            catContainer.textContent = 'Fara categorii';
+        }
+
+        rezultat.style.display = 'block';
+        afiseazaMesaj('succes', 'Produs gasit cu succes.');
+
+    } catch (err) {
+        afiseazaMesaj('eroare', 'Nu s-a putut conecta la server. Verifica daca aplicatia ruleaza.');
+    }
+}
+
+function afiseazaMesaj(tip, text) {
+    const el         = document.getElementById('mesaj');
+    el.textContent   = text;
+    el.className     = `mesaj ${tip}`;
+    el.style.display = 'block';
+}
+</script>
+{% endblock %}

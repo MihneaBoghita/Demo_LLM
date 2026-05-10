@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% set pagina = 'adauga' %}
+
+{% block titlu %}Adauga produs{% endblock %}
+
+{% block continut %}
+<h1>
+    <span class="badge badge-post">POST</span>
+    /add_produs — Adauga produs nou
+</h1>
+
+<div class="card">
+    <p style="color:#555; margin-bottom:1.2rem;">
+        Completeaza formularul si apasa <strong>Adauga</strong> pentru a trimite
+        o cerere <strong>POST</strong> catre <code>/add_produs</code> cu datele
+        in format <strong>JSON</strong>.
+    </p>
+
+    <div class="form-grup">
+        <label for="campNume">Nume produs</label>
+        <input
+            type="text"
+            id="campNume"
+            placeholder="ex: Tastatura"
+            maxlength="100"
+        >
+    </div>
+
+    <div class="form-grup" style="max-width:280px;">
+        <label for="campPret">Pret (RON)</label>
+        <input
+            type="number"
+            id="campPret"
+            min="1"
+            placeholder="ex: 150"
+        >
+    </div>
+
+    <button class="btn-primar" onclick="adaugaProdus()">Adauga produs</button>
+
+    <div id="mesaj" class="mesaj"></div>
+
+    <!-- Afisam produsul adaugat ca confirmare -->
+    <div id="confirmare" style="display:none; margin-top:1.2rem;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID generat</th>
+                    <th>Nume</th>
+                    <th>Pret (RON)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="conf-id"></td>
+                    <td id="conf-name"></td>
+                    <td id="conf-price"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function adaugaProdus() {
+    const nume       = document.getElementById('campNume').value.trim();
+    const pret       = document.getElementById('campPret').value.trim();
+    const mesajEl    = document.getElementById('mesaj');
+    const confirmare = document.getElementById('confirmare');
+
+    // Resetam starea
+    mesajEl.style.display    = 'none';
+    mesajEl.className        = 'mesaj';
+    confirmare.style.display = 'none';
+
+    // Validare simpla pe client
+    if (!nume) {
+        afiseazaMesaj('eroare', 'Campul "Nume produs" este obligatoriu.');
+        return;
+    }
+    if (!pret || parseFloat(pret) <= 0) {
+        afiseazaMesaj('eroare', 'Campul "Pret" trebuie sa fie un numar pozitiv.');
+        return;
+    }
+
+    // Construim obiectul JSON care va fi trimis in body
+    const corpCerere = {
+        name:  nume,
+        price: parseFloat(pret)
+    };
+
+    try {
+        // Cerere POST cu body JSON
+        const raspuns = await fetch('/add_produs', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(corpCerere)
+        });
+
+        const date = await raspuns.json();
+
+        if (raspuns.status === 409) {
+            afiseazaMesaj('eroare', `Produsul "${nume}" exista deja in baza de date.`);
+            return;
+        }
+
+        if (!raspuns.ok) {
+            afiseazaMesaj('eroare', date.eroare || 'Eroare necunoscuta de la server.');
+            return;
+        }
+
+        // Afisam confirmarea cu datele returnate de server (inclusiv ID-ul generat)
+        document.getElementById('conf-id').textContent    = date.date.id;
+        document.getElementById('conf-name').textContent  = date.date.name;
+        document.getElementById('conf-price').textContent = date.date.price;
+
+        confirmare.style.display = 'block';
+        afiseazaMesaj('succes', `Produsul "${date.date.name}" a fost adaugat cu succes!`);
+
+        // Golim formularul dupa adaugare reusita
+        document.getElementById('campNume').value = '';
+        document.getElementById('campPret').value = '';
+
+    } catch (err) {
+        afiseazaMesaj('eroare', 'Nu s-a putut conecta la server. Verifica daca aplicatia ruleaza.');
+    }
+}
+
+function afiseazaMesaj(tip, text) {
+    const el         = document.getElementById('mesaj');
+    el.textContent   = text;
+    el.className     = `mesaj ${tip}`;
+    el.style.display = 'block';
+}
+</script>
+{% endblock %}
