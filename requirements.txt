@@ -4,3 +4,6 @@ sentence-transformers
 torch
 faker
 requests
+numpy
+python-dotenv
+google-genai

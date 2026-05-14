@@ -1,25 +1,46 @@
 import sqlite3
-import os
 from config import DB_PATH
 from contextlib import contextmanager
 
-@contextmanager
-def get_connection(auto_create = False):
-    con = None
 
-    try:
-        if not auto_create and not os.path.exists(DB_PATH):
-            yield None
-            return
-        
+class Database:
+    def __init__(self):
+        pass
+
+    @contextmanager
+    def get_connection(self):
         con = sqlite3.connect(DB_PATH)
-        yield con
-        con.commit()
-    except Exception as e:
-        if(con):
+        con.row_factory = sqlite3.Row
+
+        try:
+            yield con
+            con.commit()
+        except Exception as e:
             con.rollback()
-        raise e
-    finally:
-        if(con):
+            raise e
+        finally:
             con.close()
 
+    def filter_products(self, filters):
+        products = []
+
+        with self.get_connection() as con:
+            cursor = con.cursor()
+            cursor.execute("SELECT * FROM products")
+            rows = cursor.fetchall()
+
+            products = [dict(row) for row in rows]
+
+        return products
+
+    def get_all_products(self):
+        products = []
+
+        with self.get_connection() as con:
+            cursor = con.cursor()
+            cursor.execute("SELECT * FROM products")
+            rows = cursor.fetchall()
+
+            products = [dict(row) for row in rows]
+
+        return products
