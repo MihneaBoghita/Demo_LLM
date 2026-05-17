@@ -1,4 +1,4 @@
-from database import Database
+from database.db import Database
 from embedding_service import EmbeddingService
 
 
